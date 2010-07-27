@@ -107,32 +107,37 @@ public class AVClient {
 	}
 	
 	AVMap request(String service, String method, Object params) {
+		AVMap avrequest = new AVMap();
 		try {
-			AVMap avrequest = new AVMap();
 			request.setRequestMethod("POST");
 			request.setDoInput(true);
 			request.setDoOutput(true);
 			OutputStream ost = request.getOutputStream();
 			PrintWriter broadcaster = new PrintWriter(ost);
 			avrequest.name = "air.connect.Request";
-			avrequest.put("requestURL", this.endpoint.toString());
 			avrequest.put("clientIdentifier", "89eae483355719f119d698e8d11e8b356525ecfb");
 			avrequest.put("passwordDigest", "DA5353CC7A72F02A7BBA1ABEA1AC566882805B89");
+			avrequest.put("methodName", method);
+			avrequest.put("requestURL", endpoint.toString());
+			avrequest.put("parameters", params);
 			avrequest.put("clientVersion", 221);
 			avrequest.put("serviceName", service);
-			avrequest.put("methodName", method);
-			avrequest.put("parameters", params);
+			
 			String rpc = avrequest.to_avmap(avrequest, true);
 			broadcaster.print(rpc);
 			broadcaster.flush();
 			broadcaster.close();
 			
 			
-			return AVMap.parse(request.getInputStream());
+			avrequest = AVMap.parse(request.getInputStream());
+			//request.disconnect();
+			//return AVMap.parse(request.getInputStream());
+			
 		} 
 		catch (Exception e) {
 			e.printStackTrace();
+			avrequest = null;
 		}
-		return null;
+		return avrequest;
 	}
 }

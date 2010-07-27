@@ -16,7 +16,6 @@ public class Home extends Activity {
         setContentView(lvw);
         
         AVClient server = new AVClient("192.168.1.105", 45631, "");
-        @SuppressWarnings("unused")
         AVFolder root = new AVFolder(server, "root", "/");
         ArrayList <Object> items = server.ls(root);
     }
