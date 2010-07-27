@@ -6,11 +6,18 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
+import java.nio.BufferOverflowException;
+import java.nio.ByteBuffer;
+import java.nio.ReadOnlyBufferException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Set;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 
-public class AVMap extends HashMap {
+public class AVMap extends LinkedHashMap {
 	String name;
 	//String __input;
 	int __counter;
@@ -23,6 +30,8 @@ public class AVMap extends HashMap {
 
 	public String to_avmap(Object o, boolean resetCounter) throws Exception {
 		String mem = "";
+		String kids = "";
+		int kidcount = 0;
 		if (resetCounter) __counter = 0;
 		if (o == null) {
 			mem = "n";
@@ -36,21 +45,37 @@ public class AVMap extends HashMap {
 			for (Object i : (ArrayList) o) {
 				mem += to_avmap(i, false);
 			}
-		} else if (o instanceof HashMap) {
+		} else if (o instanceof AVMap) {
+			AVMap h = (AVMap)o;
 			int version = 1;
-			if (((AVMap)o).name == "air.video.ConversionRequest") {
+			if (h.name == "air.video.ConversionRequest") {
 				version = 221;
 			}
-			mem = "o" + pack(__counter++) + pack(((AVMap)o).name.length()) + ((AVMap)o).name + pack(version) + pack(((AVMap)o).size());
-			Iterator<Object> i = ((AVMap)o).keySet().iterator();
+			mem = "o" + pack(__counter++) + pack(h.name.length()) + h.name + pack(version);
+			
+			/*kids = "";
+			String [] keys = (String[]) h.keySet().toArray();
+			kidcount = keys.length;
+			for (int i = 0; i < kidcount; i++)  {
+				String key = keys[i];
+				kids += key.length() + key + to_avmap(h.get(key), false);
+			}
+			*/
+			
+			Iterator<Object> i = h.keySet().iterator();
+			kids = "";
+			kidcount = 0;
 			while (i.hasNext()) {
 				Object k = i.next();
 				if (k instanceof String) {
-					mem += pack(((String)k).length());
-					mem += (String)k;
-					mem += to_avmap( ((AVMap)o).get(k) , false);
+					kids += pack(((String)k).length());
+					kids += (String)k;
+					kids += to_avmap( h.get(k) , false);
+					kidcount++;
 				}
 			}
+			
+			mem +=  pack(kidcount) + kids;
 		} else if (o instanceof AVBinary) {
 			mem = "x" + pack(__counter++) + pack(((AVBinary)o).data.length()) + ((AVBinary)o).data;
 		} else if (o instanceof String) {
@@ -68,16 +93,18 @@ public class AVMap extends HashMap {
 	}
 	
 	private String pack(int i) {
-		byte [] bytes = new byte[4];
-		bytes[0] = (byte)(i >> 24);
-		bytes[1] = (byte)( (i << 8) >> 24);
-		bytes[2] = (byte) ( (i << 16) >> 24);
-		bytes[3] = (byte) ( (i << 24) >> 24);
+		long l = (long)i;
+		char [] bytes = new char[4];
+		bytes[0] = (char)((l & 0xFF000000L) >> 24);
+		bytes[1] = (char)((l & 0x00FF0000L) >> 16);
+		bytes[2] = (char)((l & 0x0000FF00L) >> 8);
+		bytes[3] = (char)((l & 0x000000FFL));
 		try {
-			return new String(bytes, "UTF-8");
+			return new String(bytes);
 		} catch (Exception e) {
 			return "\0\0\0\0";
 		}
+		
 	}
 	
 	private String pack(float f) {
@@ -91,12 +118,13 @@ public class AVMap extends HashMap {
 		AVMap result = null;
 		
 		try {
-			return (AVMap)obj.readIdentifier(0);
+			result = (AVMap)obj.readIdentifier(0);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			return null;
+			result = null;
 		}
+		return result;
 	}
 	
 	public String readString(int c_byte) throws IOException {
