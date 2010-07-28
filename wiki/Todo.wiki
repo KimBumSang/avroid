@@ -1,0 +1,1 @@
+The parse routines in avmap need to operate on a datainputstream to properly handle high bits in strings
