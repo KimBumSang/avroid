@@ -1,5 +1,6 @@
 package com.airvideo;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -113,7 +114,8 @@ public class AVClient {
 			request.setDoInput(true);
 			request.setDoOutput(true);
 			OutputStream ost = request.getOutputStream();
-			PrintWriter broadcaster = new PrintWriter(ost);
+			//PrintWriter broadcaster = new PrintWriter(ost);
+			DataOutputStream broadcaster = new DataOutputStream(ost);
 			avrequest.name = "air.connect.Request";
 			avrequest.put("clientIdentifier", "89eae483355719f119d698e8d11e8b356525ecfb");
 			avrequest.put("passwordDigest", "DA5353CC7A72F02A7BBA1ABEA1AC566882805B89");
@@ -123,8 +125,8 @@ public class AVClient {
 			avrequest.put("clientVersion", 221);
 			avrequest.put("serviceName", service);
 			
-			String rpc = avrequest.to_avmap(avrequest, true);
-			broadcaster.print(rpc);
+			String rpc = avrequest.to_avmap(avrequest, true, broadcaster);
+			//broadcaster.print(rpc);
 			broadcaster.flush();
 			broadcaster.close();
 			

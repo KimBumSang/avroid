@@ -1,6 +1,7 @@
 package com.airvideo;
 
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -28,22 +29,32 @@ public class AVMap extends LinkedHashMap {
 		this.__counter = 0;
 	}
 
-	public String to_avmap(Object o, boolean resetCounter) throws Exception {
+	public String to_avmap(Object o, boolean resetCounter, DataOutputStream out) throws Exception {
 		String mem = "";
 		String kids = "";
 		int kidcount = 0;
 		if (resetCounter) __counter = 0;
 		if (o == null) {
-			mem = "n";
+			//mem = "n";
+			out.writeBytes("n");
 		} else if (o instanceof BitRateList) {
-			mem = "e" + pack(__counter++) + pack(((BitRateList)o).size());
+			//mem = "e" + pack(__counter++) + pack(((BitRateList)o).size());
+			out.writeBytes("e");
+			out.writeInt(__counter++);
+			out.writeInt(((BitRateList)o).size());
 			for (Object i : (BitRateList) o) {
-				mem += to_avmap(i, false);
+				//mem += to_avmap(i, false);
+				to_avmap(i, false, out);
 			}
 		} else if (o instanceof ArrayList) {
-			mem = "a" + pack(__counter++) + pack(((ArrayList)o).size());
+			//mem = "a" + pack(__counter++) + pack(((ArrayList)o).size());
+			out.writeBytes("a");
+			out.writeInt(__counter++);
+			out.writeInt(((ArrayList)o).size());
+
 			for (Object i : (ArrayList) o) {
-				mem += to_avmap(i, false);
+				//mem += to_avmap(i, false);
+				to_avmap(i, false, out);
 			}
 		} else if (o instanceof AVMap) {
 			AVMap h = (AVMap)o;
@@ -51,8 +62,13 @@ public class AVMap extends LinkedHashMap {
 			if (h.name == "air.video.ConversionRequest") {
 				version = 221;
 			}
-			mem = "o" + pack(__counter++) + pack(h.name.length()) + h.name + pack(version);
-			
+			//mem = "o" + pack(__counter++) + pack(h.name.length()) + h.name + pack(version);
+			out.writeBytes("o");
+			out.writeInt(__counter++);
+			out.writeInt(h.name.length());
+			out.writeBytes(h.name);
+			out.writeInt(version);
+
 			/*kids = "";
 			String [] keys = (String[]) h.keySet().toArray();
 			kidcount = keys.length;
@@ -65,27 +81,53 @@ public class AVMap extends LinkedHashMap {
 			Iterator<Object> i = h.keySet().iterator();
 			kids = "";
 			kidcount = 0;
+			out.writeInt(h.size());
 			while (i.hasNext()) {
 				Object k = i.next();
 				if (k instanceof String) {
-					kids += pack(((String)k).length());
-					kids += (String)k;
-					kids += to_avmap( h.get(k) , false);
+					out.writeInt(((String)k).length());
+					//kids += pack(((String)k).length());
+					out.writeBytes((String)k);
+					//kids += (String)k;
+					//kids += to_avmap( h.get(k) , false);
+					to_avmap(h.get(k), false, out);
 					kidcount++;
 				}
 			}
 			
-			mem +=  pack(kidcount) + kids;
+//			mem +=  pack(kidcount) + kids;
 		} else if (o instanceof AVBinary) {
-			mem = "x" + pack(__counter++) + pack(((AVBinary)o).data.length()) + ((AVBinary)o).data;
+			out.writeBytes("x");
+			out.writeInt(__counter++);
+			out.writeInt(((AVBinary)o).data.length());
+			out.writeBytes(((AVBinary)o).data); 
+
+			//mem = "x" + pack(__counter++) + pack(((AVBinary)o).data.length()) + ((AVBinary)o).data;
 		} else if (o instanceof String) {
-			mem = "s" + pack(__counter++) + pack(((String)o).length()) + (String)o;
+			out.writeBytes("s");
+			out.writeInt(__counter++);
+			out.writeInt(((String)o).length());
+			out.writeBytes((String)o);
+
+			//mem = "s" + pack(__counter++) + pack(((String)o).length()) + (String)o;
 		} else if (o instanceof URL) {
-			mem = "s" + pack(__counter++) + pack(((URL)o).toString().length()) + ((URL)o).toString();
+			out.writeBytes("s");
+			out.writeInt(__counter++);
+			out.writeInt(((URL)o).toString().length());
+			out.writeBytes(((URL)o).toString());
+			
+			//mem = "s" + pack(__counter++) + pack(((URL)o).toString().length()) + ((URL)o).toString();
 		} else if (o instanceof Integer) {
-			mem = "i" + pack(((Integer)o).intValue());
+			out.writeBytes("i");
+			out.writeInt(((Integer)o).intValue());
+
+			//mem = "i" + pack(((Integer)o).intValue());
 		} else if (o instanceof Float) {
-			mem = "f" + pack((Float)o);
+			out.writeBytes("f");
+			out.writeFloat((Float)o);
+			
+
+			//mem = "f" + pack((Float)o);
 		} else {
 			throw new Exception("Don't know how to package this datatype");
 		}
@@ -94,17 +136,20 @@ public class AVMap extends LinkedHashMap {
 	
 	private String pack(int i) {
 		long l = (long)i;
-		char [] bytes = new char[4];
-		bytes[0] = (char)((l & 0xFF000000L) >> 24);
-		bytes[1] = (char)((l & 0x00FF0000L) >> 16);
-		bytes[2] = (char)((l & 0x0000FF00L) >> 8);
-		bytes[3] = (char)((l & 0x000000FFL));
+		if (i == 221) {
+			l = (long)i;
+		}
+		byte [] bytes = new byte[4];
+		bytes[0] = (byte)((l & 0xFF000000L) >> 24);
+		bytes[1] = (byte)((l & 0x00FF0000L) >> 16);
+		bytes[2] = (byte)((l & 0x0000FF00L) >> 8);
+		bytes[3] = (byte)((l & 0x000000FFL));
 		try {
-			return new String(bytes);
+			return new String(bytes, "ISO-8859-1");
+			
 		} catch (Exception e) {
 			return "\0\0\0\0";
 		}
-		
 	}
 	
 	private String pack(float f) {
