@@ -20,7 +20,6 @@ import java.nio.charset.CharsetDecoder;
 
 public class AVMap extends LinkedHashMap {
 	String name;
-	//String __input;
 	int __counter;
 	DataInputStream __input;
 	
@@ -35,25 +34,20 @@ public class AVMap extends LinkedHashMap {
 		int kidcount = 0;
 		if (resetCounter) __counter = 0;
 		if (o == null) {
-			//mem = "n";
 			out.writeBytes("n");
 		} else if (o instanceof BitRateList) {
-			//mem = "e" + pack(__counter++) + pack(((BitRateList)o).size());
 			out.writeBytes("e");
 			out.writeInt(__counter++);
 			out.writeInt(((BitRateList)o).size());
 			for (Object i : (BitRateList) o) {
-				//mem += to_avmap(i, false);
 				to_avmap(i, false, out);
 			}
 		} else if (o instanceof ArrayList) {
-			//mem = "a" + pack(__counter++) + pack(((ArrayList)o).size());
 			out.writeBytes("a");
 			out.writeInt(__counter++);
 			out.writeInt(((ArrayList)o).size());
 
 			for (Object i : (ArrayList) o) {
-				//mem += to_avmap(i, false);
 				to_avmap(i, false, out);
 			}
 		} else if (o instanceof AVMap) {
@@ -62,22 +56,12 @@ public class AVMap extends LinkedHashMap {
 			if (h.name == "air.video.ConversionRequest") {
 				version = 221;
 			}
-			//mem = "o" + pack(__counter++) + pack(h.name.length()) + h.name + pack(version);
 			out.writeBytes("o");
 			out.writeInt(__counter++);
 			out.writeInt(h.name.length());
 			out.writeBytes(h.name);
 			out.writeInt(version);
 
-			/*kids = "";
-			String [] keys = (String[]) h.keySet().toArray();
-			kidcount = keys.length;
-			for (int i = 0; i < kidcount; i++)  {
-				String key = keys[i];
-				kids += key.length() + key + to_avmap(h.get(key), false);
-			}
-			*/
-			
 			Iterator<Object> i = h.keySet().iterator();
 			kids = "";
 			kidcount = 0;
@@ -86,76 +70,38 @@ public class AVMap extends LinkedHashMap {
 				Object k = i.next();
 				if (k instanceof String) {
 					out.writeInt(((String)k).length());
-					//kids += pack(((String)k).length());
 					out.writeBytes((String)k);
-					//kids += (String)k;
-					//kids += to_avmap( h.get(k) , false);
 					to_avmap(h.get(k), false, out);
 					kidcount++;
 				}
 			}
-			
-//			mem +=  pack(kidcount) + kids;
 		} else if (o instanceof AVBinary) {
 			out.writeBytes("x");
 			out.writeInt(__counter++);
 			out.writeInt(((AVBinary)o).data.length());
 			out.writeBytes(((AVBinary)o).data); 
-
-			//mem = "x" + pack(__counter++) + pack(((AVBinary)o).data.length()) + ((AVBinary)o).data;
 		} else if (o instanceof String) {
 			out.writeBytes("s");
 			out.writeInt(__counter++);
 			out.writeInt(((String)o).length());
 			out.writeBytes((String)o);
-
-			//mem = "s" + pack(__counter++) + pack(((String)o).length()) + (String)o;
 		} else if (o instanceof URL) {
 			out.writeBytes("s");
 			out.writeInt(__counter++);
 			out.writeInt(((URL)o).toString().length());
 			out.writeBytes(((URL)o).toString());
-			
-			//mem = "s" + pack(__counter++) + pack(((URL)o).toString().length()) + ((URL)o).toString();
 		} else if (o instanceof Integer) {
 			out.writeBytes("i");
 			out.writeInt(((Integer)o).intValue());
-
-			//mem = "i" + pack(((Integer)o).intValue());
-		} else if (o instanceof Float) {
+		} else if (o instanceof Double) {
 			out.writeBytes("f");
-			out.writeFloat((Float)o);
-			
-
-			//mem = "f" + pack((Float)o);
+			out.writeDouble((Double)o);
 		} else {
 			throw new Exception("Don't know how to package this datatype");
 		}
 		return mem;
 	}
 	
-	private String pack(int i) {
-		long l = (long)i;
-		if (i == 221) {
-			l = (long)i;
-		}
-		byte [] bytes = new byte[4];
-		bytes[0] = (byte)((l & 0xFF000000L) >> 24);
-		bytes[1] = (byte)((l & 0x00FF0000L) >> 16);
-		bytes[2] = (byte)((l & 0x0000FF00L) >> 8);
-		bytes[3] = (byte)((l & 0x000000FFL));
-		try {
-			return new String(bytes, "ISO-8859-1");
-			
-		} catch (Exception e) {
-			return "\0\0\0\0";
-		}
-	}
-	
-	private String pack(float f) {
-		return pack(Float.floatToRawIntBits(f));
-	}
-
 	public static AVMap parse (InputStream i) {
 		AVMap obj = new AVMap();
 		obj.__input = new DataInputStream(i);
@@ -229,19 +175,16 @@ public class AVMap extends LinkedHashMap {
 			return a;
 		case 'n': // null
 			return null;
-		case 'f': // float
-			float f = __input.readFloat();
+		case 'f': // 8-byte float
+			double f = __input.readDouble();
 			return f;
-		case 'l': // big int
-			unknown = __input.readInt();
-			childrencount = __input.readInt();
-			return 0;
 		case 'x': // binary
 			AVBinary bin = new AVBinary("");
 			unknown = __input.readInt();
 			childrencount = __input.readInt();
 			bin.data = readString(childrencount);
 			return bin;
+		case 'l': // big int
 		default:
 			throw new Exception("Unknown identifier " + ident);
 		}
