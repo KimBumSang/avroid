@@ -47,8 +47,21 @@ public class AVClient {
 		paths.add(path);
 		AVMap files = request("browseService","getItems",paths);
 		try {
-			HashMap o = (HashMap)files.get("result");
-			o = (HashMap)o.get("items");
+			AVMap r = (AVMap)files.get("result");
+			paths = (ArrayList)(r.get("items"));
+			for (int i = 0; i < paths.size(); i++) {
+				AVMap f = (AVMap) paths.get(i);
+				if (f.name == "air.video.DiskRootFolder" ||
+					f.name == "air.video.ITunesRootFolder" ||
+					f.name == "air.video.Folder") {
+					results.add(new AVFolder(this, (String)f.get("name"), (String)f.get("itemId")));
+				} else if (f.name == "air.video.VideoItem" || 
+						f.name == "air.video.ITunesVideoItem") {
+					results.add(new AVVideo(this, (String)f.get("name"), (String)f.get("itemId"), f.get("detail")));
+				} else {
+					
+				}
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
