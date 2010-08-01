@@ -3,10 +3,7 @@ package com.airvideo;
 import java.net.URL;
 import java.util.HashMap;
 
-public class AVVideo {
-	AVClient server;
-	String name;
-	String location;
+public class AVVideo extends AVResource {
 	Object details;
 	HashMap <Object,Object> videoStream;
 	HashMap <Object,Object> audioStream;
