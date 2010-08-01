@@ -3,13 +3,10 @@ package com.airvideo;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.Socket;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class AVClient {
 	HttpURLConnection request;
@@ -21,13 +18,11 @@ public class AVClient {
 		try {
 			endpoint = new URL("http://" + server + ":" + port + "/service");
 		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		try {
 			request = (HttpURLConnection)endpoint.openConnection();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		request.addRequestProperty("User-Agent", "AirVideo/2.2.4 CFNetwork/459 Darwin/10.0.0d3");
@@ -40,10 +35,11 @@ public class AVClient {
 		max_h = 480;
 	}
 	
-	ArrayList ls(AVFolder dir) {
-		ArrayList results = new ArrayList();
-		String path = null; //dir.location;
-		ArrayList paths = new ArrayList();
+	ArrayList <AVResource> ls(AVFolder dir) {
+		ArrayList <AVResource> results = new ArrayList<AVResource>();
+		String path = dir.location;
+		ArrayList <Object> paths = new ArrayList <Object> ();
+		if (path.equals("")) path = null;
 		paths.add(path);
 		AVMap files = request("browseService","getItems",paths);
 		try {
@@ -51,13 +47,13 @@ public class AVClient {
 			paths = (ArrayList)(r.get("items"));
 			for (int i = 0; i < paths.size(); i++) {
 				AVMap f = (AVMap) paths.get(i);
-				if (f.name == "air.video.DiskRootFolder" ||
-					f.name == "air.video.ITunesRootFolder" ||
-					f.name == "air.video.Folder") {
-					results.add(new AVFolder(this, (String)f.get("name"), (String)f.get("itemId")));
-				} else if (f.name == "air.video.VideoItem" || 
-						f.name == "air.video.ITunesVideoItem") {
-					results.add(new AVVideo(this, (String)f.get("name"), (String)f.get("itemId"), f.get("detail")));
+				if (f.name.equals("air.video.DiskRootFolder") ||
+					f.name.equals("air.video.ITunesRootFolder") ||
+					f.name.equals("air.video.Folder")) {
+						results.add(new AVFolder(this, (String)f.get("name"), (String)f.get("itemId")));
+				} else if (f.name.equals("air.video.VideoItem") || 
+					f.name.equals("air.video.ITunesVideoItem")) {
+						results.add(new AVVideo(this, (String)f.get("name"), (String)f.get("itemId"), f.get("detail")));
 				} else {
 					
 				}
@@ -70,8 +66,10 @@ public class AVClient {
 		return results;
 	}
 	
-	void cd(AVFolder dir) {
-		pwd = dir.location;
+	AVFolder cd(AVFolder dir) {
+		pwd = dir.location.substring(1);
+		AVFolder f = new AVFolder(this, dir.name, pwd);
+		return f;
 	}
 	
 	URL getUrl(AVVideo video, boolean live) {
