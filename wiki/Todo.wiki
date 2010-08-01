@@ -1,1 +1,1 @@
-The parse routines in avmap need to operate on a datainputstream to properly handle high bits in strings
+Determine if connections aren't properly closed, leading to second requests failing, or if subdirectories are being mishandled.
