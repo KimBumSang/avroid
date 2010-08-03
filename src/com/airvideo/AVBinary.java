@@ -2,7 +2,6 @@ package com.airvideo;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.BufferedInputStream;
 
 public class AVBinary {
 	public byte [] data;

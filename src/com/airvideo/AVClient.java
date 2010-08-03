@@ -129,17 +129,17 @@ public class AVClient {
 		settings.put("itemId", file.location.substring(1) );
 		settings.put("audioStream", 1);
 		settings.put("allowedBitrates", BitRateList.defaults());
-		settings.put("audioBoost", new Double(0.0));
-		settings.put("cropRight", new Integer(0));
-		settings.put("cropLeft", new Integer(0));
-		settings.put("resolutionWidth", new Integer(desired_width));
-		settings.put("videoStream", new Integer(0));
-		settings.put("cropBottom", new Integer(0));
-		settings.put("cropTop", new Integer(0));
-		settings.put("quality", new Double(0.699999988079071));
+		settings.put("audioBoost", 0.0);
+		settings.put("cropRight", 0);
+		settings.put("cropLeft", 0);
+		settings.put("resolutionWidth", desired_width);
+		settings.put("videoStream", 0);
+		settings.put("cropBottom", 0);
+		settings.put("cropTop", 0);
+		settings.put("quality", 0.699999988079071);
 		settings.put("subtitleInfo", null);
-		settings.put("offset", new Double(0.0));
-		settings.put("resolutionHeight", new Integer(desired_height));
+		settings.put("offset", 0.0);
+		settings.put("resolutionHeight", desired_height);
 		return settings;
 	}
 	

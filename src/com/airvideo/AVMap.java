@@ -22,7 +22,6 @@ public class AVMap extends LinkedHashMap<String, Object> {
 	}
 
 	public void to_avmap(Object o, boolean resetCounter, DataOutputStream out) throws Exception {
-		int kidcount = 0;
 		if (resetCounter) __counter = 0;
 		if (o == null) {
 			out.writeBytes("n");
@@ -30,7 +29,7 @@ public class AVMap extends LinkedHashMap<String, Object> {
 			out.writeBytes("e");
 			out.writeInt(__counter++);
 			out.writeInt(((BitRateList)o).size());
-			for (Object i : (BitRateList) o) {
+			for (Integer i : (BitRateList) o) {
 				to_avmap(i, false, out);
 			}
 		} else if (o instanceof ArrayList) {
@@ -54,14 +53,12 @@ public class AVMap extends LinkedHashMap<String, Object> {
 			out.writeInt(version);
 
 			Iterator<String> i = h.keySet().iterator();
-			kidcount = 0;
 			out.writeInt(h.size());
 			while (i.hasNext()) {
 				Object k = i.next();
 				out.writeInt(((String)k).length());
 				out.writeBytes((String)k);
 				to_avmap(h.get(k), false, out);
-				kidcount++;
 			}
 		} else if (o instanceof AVBinary) {
 			out.writeBytes("x");
@@ -81,7 +78,7 @@ public class AVMap extends LinkedHashMap<String, Object> {
 		} else if (o instanceof Integer) {
 			out.writeBytes("i");
 			out.writeInt(((Integer)o).intValue());
-		} else if (o instanceof Double) {
+		} else if (o instanceof Double || o instanceof Float) {
 			out.writeBytes("f");
 			out.writeDouble((Double)o);
 		} else {
