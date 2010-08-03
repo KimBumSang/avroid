@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
 public class Home extends ListActivity {
@@ -58,6 +59,7 @@ public class Home extends ListActivity {
 		public void run() {
 			if(items != null && items.size() > 0){
 				_adapter.notifyDataSetChanged();
+				_adapter.clear();
 				for(int i=0;i<items.size();i++)
 					_adapter.add(items.get(i));
 			}
@@ -68,13 +70,19 @@ public class Home extends ListActivity {
 	private OnItemClickListener listlistener = new OnItemClickListener() {
 		public void onItemClick(AdapterView parent, View arg1, int position, long arg3) {
 			AVResource item = ((AVResource)parent.getItemAtPosition(position));
-			pwd = server.cd((AVFolder)item);
-			Thread thread =  new Thread(null, viewContents, "Interrogation");
-			thread.start();
-			_ProgressDialog = ProgressDialog.show(activity, "Communication Status", "Interrogating AirVideoServer", true);
+			if (item instanceof AVFolder) {
+				pwd = server.cd((AVFolder)item);
+				Thread thread =  new Thread(null, viewContents, "Interrogation");
+				thread.start();
+				_ProgressDialog = ProgressDialog.show(activity, "Communication Status", "Interrogating AirVideoServer", true);
+			} else if (item instanceof AVVideo) {
+				Context context = getApplicationContext();
+				CharSequence text = item.location;
+				int duration = Toast.LENGTH_SHORT;
 
-//			getContents();
-			//Toast.makeText(getApplicationContext(), "You have clicked on " + item.name, Toast.LENGTH_SHORT).show();
+				Toast toast = Toast.makeText(context, text, duration);
+				toast.show();
+			}
 		}
 	};
 
