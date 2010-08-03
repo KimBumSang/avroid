@@ -6,7 +6,11 @@ public class AVFolder extends AVResource {
 	AVFolder(AVClient server, String name, String location) {
 		this.server = server;
 		this.name = name;
-		this.location = location;
+		if (location == null) {
+			this.location = null;
+		} else {
+			this.location = "/" + location;			
+		}
 	}
 	
 	AVFolder cd () {

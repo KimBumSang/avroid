@@ -1,16 +1,41 @@
 package com.airvideo;
 
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.BufferedInputStream;
+
 public class AVBinary {
-	String data;
+	public byte [] data;
 	
-	AVBinary(String a) {
-		data = a;
+	AVBinary() {
+		
+	}
+	
+	public void read(DataInputStream d, int length) {
+		try {
+			int available = d.available();
+			if (length < 0 || available < length) {
+				this.data = null;
+				return;
+			}
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		this.data = new byte [length];
+		try {
+			d.read(this.data);
+		} catch (IOException e) {
+			e.printStackTrace();
+			// wait!
+		}
 	}
 	
 	public void writeTo (String path) {
 		
 	}
 	public int length() {
-		return data.length();
+		return data.length;
 	}
 }

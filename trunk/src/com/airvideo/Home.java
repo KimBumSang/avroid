@@ -13,7 +13,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
 public class Home extends ListActivity {
@@ -22,17 +21,19 @@ public class Home extends ListActivity {
 	private AVClient server;
 	private ArrayList <AVResource> items ;
 	private AVFolder pwd;
-	private ProgressDialog _ProgressDialog = null; 
+	private ProgressDialog _ProgressDialog = null;
+	private Activity activity;
 
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		this.activity = this;
 		setContentView(R.layout.main);
 		getListView().setOnItemClickListener(listlistener);
 
 		server = new AVClient("192.168.1.105", 45631, "");
-		pwd = new AVFolder(server, "root", "");
+		pwd = new AVFolder(server, "root", null);
 		items = new ArrayList <AVResource>();
 
 		this._adapter = new AVFolderListAdapter(this, R.layout.row, items);
@@ -67,8 +68,12 @@ public class Home extends ListActivity {
 	private OnItemClickListener listlistener = new OnItemClickListener() {
 		public void onItemClick(AdapterView parent, View arg1, int position, long arg3) {
 			AVResource item = ((AVResource)parent.getItemAtPosition(position));
-			server.cd((AVFolder)item);
-			getContents();
+			pwd = server.cd((AVFolder)item);
+			Thread thread =  new Thread(null, viewContents, "Interrogation");
+			thread.start();
+			_ProgressDialog = ProgressDialog.show(activity, "Communication Status", "Interrogating AirVideoServer", true);
+
+//			getContents();
 			//Toast.makeText(getApplicationContext(), "You have clicked on " + item.name, Toast.LENGTH_SHORT).show();
 		}
 	};

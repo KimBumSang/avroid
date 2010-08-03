@@ -1,7 +1,9 @@
 package com.airvideo;
 
+import java.io.BufferedInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -13,10 +15,22 @@ public class AVClient {
 	URL endpoint;
 	String pwd;
 	int max_w, max_h;
+	String _server;
+	int _port;
+	String _password;
 	
 	AVClient(String server, int port, String password) {
+		_server = server; _port = port; _password = password;
+		_newRequest();
+		
+		pwd = "/";
+		max_w = 640;
+		max_h = 480;
+	}
+	
+	void _newRequest() {
 		try {
-			endpoint = new URL("http://" + server + ":" + port + "/service");
+			endpoint = new URL("http://" + _server + ":" + _port + "/service");
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		}
@@ -29,17 +43,18 @@ public class AVClient {
 		request.addRequestProperty("Accept", "*/*");
 		request.addRequestProperty("Accept-Language", "en-us");
 		request.addRequestProperty("Accept-Encoding", "gzip, deflate");
-		
-		pwd = "/";
-		max_w = 640;
-		max_h = 480;
 	}
 	
 	ArrayList <AVResource> ls(AVFolder dir) {
 		ArrayList <AVResource> results = new ArrayList<AVResource>();
-		String path = dir.location;
 		ArrayList <Object> paths = new ArrayList <Object> ();
-		if (path.equals("")) path = null;
+		
+		String path = dir.location;
+		if (path == null || path.equals(""))
+			path = null;
+		else
+			path = path.substring(1);
+		
 		paths.add(path);
 		AVMap files = request("browseService","getItems",paths);
 		try {
@@ -78,7 +93,7 @@ public class AVClient {
 			packet = request("livePlaybackService","initLivePlayback",conversionSettings(video));
 			//['result']['contentURL'];
 		} else {
-			packet = request("playbackService","initPlayback",video.location);
+			packet = request("playbackService","initPlayback",video.location.substring(1));
 			//['result']['contentURL']
 		}
 		return null;
@@ -125,7 +140,6 @@ public class AVClient {
 			request.setDoInput(true);
 			request.setDoOutput(true);
 			OutputStream ost = request.getOutputStream();
-			//PrintWriter broadcaster = new PrintWriter(ost);
 			DataOutputStream broadcaster = new DataOutputStream(ost);
 			avrequest.name = "air.connect.Request";
 			avrequest.put("clientIdentifier", "89eae483355719f119d698e8d11e8b356525ecfb");
@@ -136,20 +150,20 @@ public class AVClient {
 			avrequest.put("clientVersion", 221);
 			avrequest.put("serviceName", service);
 			
-			String rpc = avrequest.to_avmap(avrequest, true, broadcaster);
-			//broadcaster.print(rpc);
+			avrequest.to_avmap(avrequest, true, broadcaster);
 			broadcaster.flush();
 			broadcaster.close();
 			
-			
-			avrequest = AVMap.parse(request.getInputStream());
-			//request.disconnect();
-			//return AVMap.parse(request.getInputStream());
-			
+			InputStream result = request.getInputStream();
+			BufferedInputStream bis = new BufferedInputStream(result, 65536);
+			avrequest = AVMap.parse(bis);
 		} 
 		catch (Exception e) {
 			e.printStackTrace();
 			avrequest = null;
+		}
+		finally {
+			_newRequest();
 		}
 		return avrequest;
 	}

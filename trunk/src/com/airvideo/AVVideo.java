@@ -11,7 +11,7 @@ public class AVVideo extends AVResource {
 	AVVideo (AVClient server, String name, String location, Object detail) {
 		this.server = server;
 		this.name = name;
-		this.location = location;
+		this.location = "/" + location;
 		this.details = detail;
 		this.videoStream = new HashMap <Object,Object>();
 		this.audioStream = new HashMap <Object,Object>();
