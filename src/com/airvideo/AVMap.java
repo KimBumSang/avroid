@@ -4,21 +4,14 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URI;
 import java.net.URL;
-import java.nio.BufferOverflowException;
-import java.nio.ByteBuffer;
-import java.nio.ReadOnlyBufferException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.Set;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
 
-public class AVMap extends LinkedHashMap {
+public class AVMap extends LinkedHashMap<String, Object> {
+	private static final long serialVersionUID = -1614829932351196412L;
+	
 	String name;
 	int __counter;
 	DataInputStream __input;
@@ -28,9 +21,7 @@ public class AVMap extends LinkedHashMap {
 		this.__counter = 0;
 	}
 
-	public String to_avmap(Object o, boolean resetCounter, DataOutputStream out) throws Exception {
-		String mem = "";
-		String kids = "";
+	public void to_avmap(Object o, boolean resetCounter, DataOutputStream out) throws Exception {
 		int kidcount = 0;
 		if (resetCounter) __counter = 0;
 		if (o == null) {
@@ -62,24 +53,21 @@ public class AVMap extends LinkedHashMap {
 			out.writeBytes(h.name);
 			out.writeInt(version);
 
-			Iterator<Object> i = h.keySet().iterator();
-			kids = "";
+			Iterator<String> i = h.keySet().iterator();
 			kidcount = 0;
 			out.writeInt(h.size());
 			while (i.hasNext()) {
 				Object k = i.next();
-				if (k instanceof String) {
-					out.writeInt(((String)k).length());
-					out.writeBytes((String)k);
-					to_avmap(h.get(k), false, out);
-					kidcount++;
-				}
+				out.writeInt(((String)k).length());
+				out.writeBytes((String)k);
+				to_avmap(h.get(k), false, out);
+				kidcount++;
 			}
 		} else if (o instanceof AVBinary) {
 			out.writeBytes("x");
 			out.writeInt(__counter++);
-			out.writeInt(((AVBinary)o).data.length());
-			out.writeBytes(((AVBinary)o).data); 
+			out.writeInt(((AVBinary)o).length());
+			out.write(((AVBinary)o).data);
 		} else if (o instanceof String) {
 			out.writeBytes("s");
 			out.writeInt(__counter++);
@@ -99,7 +87,6 @@ public class AVMap extends LinkedHashMap {
 		} else {
 			throw new Exception("Don't know how to package this datatype");
 		}
-		return mem;
 	}
 	
 	public static AVMap parse (InputStream i) {
@@ -111,7 +98,6 @@ public class AVMap extends LinkedHashMap {
 		try {
 			result = (AVMap)obj.readIdentifier(0);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			result = null;
 		}
@@ -119,6 +105,9 @@ public class AVMap extends LinkedHashMap {
 	}
 	
 	public String readString(int c_byte) throws IOException {
+		if (c_byte < 0) {
+			return null;
+		}
 		byte [] b = new byte[c_byte];
 		__input.read(b);
 		return new String(b);
@@ -129,13 +118,10 @@ public class AVMap extends LinkedHashMap {
 		int namelength;
 		int payloadlength;
 		String name;
-		int version;
 		int childrencount;
 		int unknown;
 		int keylen;
 		String key; 
-		
-		byte [] b;
 		
 		int counter;
 		
@@ -146,12 +132,16 @@ public class AVMap extends LinkedHashMap {
 			AVMap map = new AVMap();
 			unknown = __input.readInt();
 			namelength = __input.readInt();
-			map.name = readString(namelength);
+			name = readString(namelength);
+			map.name = name;
 			unknown = __input.readInt();
 			childrencount = __input.readInt();
 			for (counter = 0; counter < childrencount; counter++) {
 				keylen = __input.readInt();
 				key = readString(keylen);
+				if (key == null) {
+					return map;
+				}
 				Object d = readIdentifier (depth + 1 );
 				map.put(key, d);
 			}
@@ -170,6 +160,9 @@ public class AVMap extends LinkedHashMap {
 			childrencount = __input.readInt();
 			ArrayList <Object> a = new ArrayList <Object> ();
 			for (counter = 0; counter < childrencount; counter++) {
+				if (counter == 6) {
+					Object brk = null;
+				}
 				a.add(readIdentifier(depth + 1));
 			}
 			return a;
@@ -179,14 +172,17 @@ public class AVMap extends LinkedHashMap {
 			double f = __input.readDouble();
 			return f;
 		case 'x': // binary
-			AVBinary bin = new AVBinary("");
+			AVBinary bin = new AVBinary();
 			unknown = __input.readInt();
 			childrencount = __input.readInt();
-			bin.data = readString(childrencount);
+			bin.read(__input, childrencount);
 			return bin;
 		case 'l': // big int
+			return __input.readLong();
 		default:
-			throw new Exception("Unknown identifier " + ident);
+			//throw new Exception("Unknown identifier " + ident);
+			Object r = null;
+			return r;
 		}
 	}
 }

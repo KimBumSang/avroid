@@ -3,6 +3,8 @@ package com.airvideo;
 import java.util.ArrayList;
 
 public class BitRateList extends ArrayList<Integer> {
+	private static final long serialVersionUID = -7874844503664921870L;
+
 	static BitRateList defaults() {
 		BitRateList d = new BitRateList();
 		d.add(new Integer(512));
@@ -14,9 +16,4 @@ public class BitRateList extends ArrayList<Integer> {
 		d.add(new Integer(256));
 		return d;
 	}
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-
 }
