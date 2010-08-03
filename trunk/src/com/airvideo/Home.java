@@ -1,5 +1,6 @@
 package com.airvideo;
 
+import java.net.URL;
 import java.util.ArrayList;
 
 import android.app.Activity;
@@ -76,8 +77,10 @@ public class Home extends ListActivity {
 				thread.start();
 				_ProgressDialog = ProgressDialog.show(activity, "Communication Status", "Interrogating AirVideoServer", true);
 			} else if (item instanceof AVVideo) {
+				URL url = ((AVVideo)item).live_url();
+				
 				Context context = getApplicationContext();
-				CharSequence text = item.location;
+				CharSequence text = url.toString();
 				int duration = Toast.LENGTH_SHORT;
 
 				Toast toast = Toast.makeText(context, text, duration);

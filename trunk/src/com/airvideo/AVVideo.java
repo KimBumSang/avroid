@@ -34,10 +34,20 @@ public class AVVideo extends AVResource {
 	}
 	
 	URL url () {
-		return server.getUrl(this, false);
+		try {
+			return server.getUrl(this, false);
+		}
+		catch (Exception e) {
+			return null;
+		}
 	}
 	
 	URL live_url () {
-		return server.getUrl(this, true);
+		try {
+			return server.getUrl(this, true);
+		}
+		catch (Exception e) {
+			return null;
+		}
 	}
 }
