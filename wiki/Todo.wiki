@@ -1,5 +1,0 @@
-Can't lookup details on a video
-
-Can't get usable live URL. Suspect this is dependent on first loading details.
-
-Browse service chokes on large folders. Seems to have a maximum of about 6 videos to a directory. 
