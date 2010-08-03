@@ -87,16 +87,26 @@ public class AVClient {
 		return f;
 	}
 	
-	URL getUrl(AVVideo video, boolean live) {
+	URL getUrl(AVVideo video, boolean live) throws MalformedURLException {
 		AVMap packet;
+		URL contentURL;
+		AVMap result;
+		ArrayList<Object> parameters = new ArrayList<Object>();
+		String method;
+		String service;
 		if (live) {
-			packet = request("livePlaybackService","initLivePlayback",conversionSettings(video));
-			//['result']['contentURL'];
+			parameters.add(conversionSettings(video));
+			service = "livePlaybackService";
+			method = "initLivePlayback";
 		} else {
-			packet = request("playbackService","initPlayback",video.location.substring(1));
-			//['result']['contentURL']
+			parameters.add(video.location.substring(1));
+			service = "playbackService";
+			method = "initPlayback";
 		}
-		return null;
+		packet = request(service, method, parameters);
+		result = (AVMap) packet.get("result");
+		contentURL = new URL((String)result.get("contentURL"));
+		return contentURL;
 	}
 	
 	void getDetails(ArrayList items) {
@@ -108,16 +118,16 @@ public class AVClient {
 	// search
 	
 	AVMap conversionSettings(AVVideo file) {
-		double v_w = ((Integer)file.videoStream.get("width")).intValue();
-		double v_h = ((Integer)file.videoStream.get("height")).intValue();
-		int desired_width = (int)v_w;
-		int desired_height = (int)v_h;
+		//double v_w = ((Integer)file.videoStream.get("width")).intValue();
+		//double v_h = ((Integer)file.videoStream.get("height")).intValue();
+		int desired_width = 480; //(int)v_w;
+		int desired_height = 320; //(int)v_h;
 
 		// code to convert width, height to max_width, max_height
 		AVMap settings = new AVMap();
 		settings.name = "air.video.ConversionRequest";
-		settings.put("itemId", file.location);
-		settings.put("audioStram", 1);
+		settings.put("itemId", file.location.substring(1) );
+		settings.put("audioStream", 1);
 		settings.put("allowedBitrates", BitRateList.defaults());
 		settings.put("audioBoost", new Double(0.0));
 		settings.put("cropRight", new Integer(0));
