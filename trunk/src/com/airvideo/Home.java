@@ -11,8 +11,10 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
@@ -31,6 +33,8 @@ public class Home extends ListActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		this.activity = this;
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		
 		setContentView(R.layout.main);
 		getListView().setOnItemClickListener(listlistener);
 
@@ -109,11 +113,19 @@ public class Home extends ListActivity {
 			if (o != null) {
 				TextView tt = (TextView) v.findViewById(R.id.toptext);
 				TextView bt = (TextView) v.findViewById(R.id.bottomtext);
+				ImageView iv = (ImageView) v.findViewById(R.id.icon);
 				if (tt != null) {
 					tt.setText("Name: "+o.name);
 				}
 				if(bt != null){
-					bt.setText("Status: unknown");
+					if (o instanceof AVFolder) {
+						bt.setText("Folder");
+						iv.setVisibility(View.GONE);
+					} else if (o instanceof AVVideo) {
+						bt.setText("Video");
+						iv.setImageBitmap(((AVVideo)o).thumbnail());
+					}
+					
 				}
 			}
 			return v;

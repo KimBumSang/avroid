@@ -68,7 +68,7 @@ public class AVClient {
 						results.add(new AVFolder(this, (String)f.get("name"), (String)f.get("itemId")));
 				} else if (f.name.equals("air.video.VideoItem") || 
 					f.name.equals("air.video.ITunesVideoItem")) {
-						results.add(new AVVideo(this, (String)f.get("name"), (String)f.get("itemId"), f.get("detail")));
+						results.add(new AVVideo(this, (String)f.get("name"), (String)f.get("itemId"), (AVMap)f.get("detail")));
 				} else {
 					
 				}
@@ -109,10 +109,17 @@ public class AVClient {
 		return contentURL;
 	}
 	
-	void getDetails(ArrayList items) {
-		AVMap a = request("browseService","getItemsWithDetail",items);
-		//a['result'][0];
+	AVMap getDetails(Object item) {
+		ArrayList <String> items = new ArrayList<String> ();
+		if (item instanceof AVVideo) {
+			items.add(((AVVideo)item).location.substring(1));
+		} else if (item instanceof String) {
+			items.add((String)item);
+		}
 		
+		AVMap a = request("browseService","getItemsWithDetail",items);
+		ArrayList result = (ArrayList) a.get("result");
+		return (AVMap)a.get(0); 
 	}
 	
 	// search
