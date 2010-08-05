@@ -3,29 +3,57 @@ package com.airvideo;
 import java.net.URL;
 import java.util.HashMap;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+
 public class AVVideo extends AVResource {
-	Object details;
-	HashMap <Object,Object> videoStream;
-	HashMap <Object,Object> audioStream;
+	AVMap details;
+	AVMap videoStream;
+	AVMap audioStream;
+	AVMap streams;
 	
-	AVVideo (AVClient server, String name, String location, Object detail) {
+	AVVideo (AVClient server, String name, String location, AVMap detail) {
 		this.server = server;
 		this.name = name;
 		this.location = "/" + location;
 		this.details = detail;
-		this.videoStream = new HashMap <Object,Object>();
-		this.audioStream = new HashMap <Object,Object>();
+		this.videoStream = new AVMap();
+		this.audioStream = new AVMap();
 		this.videoStream.put("index", new Integer(1));
 		this.audioStream.put("index", new Integer(0));
 	}
 	
 	Object details() {
+		streams = new AVMap();
+		streams.put("video", new HashMap<String, Object>());
+		streams.put("audio", new HashMap<String, Object>());
+		streams.put("unknown", new HashMap<String, Object>());
+		for (int ixStream = 0; ixStream < streams.size(); ixStream++ ) {
+			if (ixStream == 0) {
+				
+			} else if (ixStream == 1) {
+				
+			} else {
+				
+			}
+		}
+		
+		audioStream = (AVMap)((AVMap)details.get("streams")).get(0);
+		videoStream = (AVMap)((AVMap)details.get("streams")).get(0);
+		//audio_stream = streams
 		return this.details;
 	}
 	
-	void audioStream(HashMap <Object,Object>stream) {
-		@SuppressWarnings("unused")
-		Integer index = (Integer)stream.get("index");
+	Bitmap thumbnail() {
+		AVBinary d = (AVBinary) this.details.get("videoThumbnail");
+		return BitmapFactory.decodeStream(d.getInputStream());
+	}
+	
+	void audioStream(AVMap stream) {
+		AVMap index = (AVMap)stream.get("index");
+		details = server.getDetails(this);
+		
+		audioStream = index;
 	}
 	
 	void videoStream(HashMap <Object,Object> stream) {

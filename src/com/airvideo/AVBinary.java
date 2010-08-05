@@ -1,5 +1,6 @@
 package com.airvideo;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 
@@ -36,5 +37,9 @@ public class AVBinary {
 	}
 	public int length() {
 		return data.length;
+	}
+	
+	public ByteArrayInputStream getInputStream() {
+		return new ByteArrayInputStream (this.data);
 	}
 }
