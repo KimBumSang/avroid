@@ -3,4 +3,7 @@
     <string name="hello">Hello World, Home!</string>
     <string name="app_name">Android AirVideo</string>
 <string name="main_no_items">No files or folders to display</string>
+<string name="title_streamed_play">Live Play</string>
+<string name="title_raw_play">Play Without Processing</string>
+<string name="title_back">Back To Folder</string>
 </resources>
