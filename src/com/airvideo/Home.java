@@ -12,6 +12,8 @@ import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,7 +38,7 @@ public class Home extends ListActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_NO_TITLE); // turn off tile bar
+		requestWindowFeature(Window.FEATURE_NO_TITLE); // turn off title bar
 		
 		setContentView(R.layout.main); // specify ui
 		getListView().setOnItemClickListener(listlistener); // click handler
