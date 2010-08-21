@@ -29,7 +29,7 @@ public class AVMap extends LinkedHashMap<String, Object> {
 			out.writeBytes("e");
 			out.writeInt(__counter++);
 			out.writeInt(((BitRateList)o).size());
-			for (Integer i : (BitRateList) o) {
+			for (String i : (BitRateList) o) {
 				to_avmap(i, false, out);
 			}
 		} else if (o instanceof ArrayList) {
